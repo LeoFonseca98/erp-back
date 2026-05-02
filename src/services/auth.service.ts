@@ -53,10 +53,10 @@ class AuthService {
         throw new Error("Senha inválida");
         }
 
-        // 🔐 AQUI QUE ENTRA O JWT
+        
         const token = jwt.sign(
-        { id: user.id }, // payload
-        process.env.JWT_SECRET as string, // segredo
+        { id: user.id }, 
+        process.env.JWT_SECRET as string,
         { expiresIn: "1d" }
         );
 
