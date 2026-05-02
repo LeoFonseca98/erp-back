@@ -8,9 +8,57 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  name        String?
-  email       String    @unique
-  password    String
-  created_at  DateTime  @default(now())
+  id               String    @id @default(uuid())
+  name             String?
+  email            String    @unique
+  password         String
+  created_at       DateTime  @default(now())
+
+  obras            Obra[]
+}
+
+
+model Obra {
+  id                String   @id @default(uuid())
+  code              String   @unique
+  name              String 
+  status            String
+
+//Localização 
+  state             String
+  city              String
+  address           String
+
+//Datas
+  startDate         DateTime
+  expectedEndDate   DateTime
+  actualEndDate     DateTime?
+
+//Financeiro
+  budget            Decimal
+  totalSpent        Decimal   @default(0)
+
+// Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])  
+
+  despesas          Despesa[]
+}
+
+
+model Despesa {
+  id               String     @id @default(uuid())
+  obraId           String
+  obra             Obra       @relation(fields: [obraId], references: [id])
+
+  description      String     //"Compra de cimento", "Pagamento pedreiro"
+  value            Float 
+  category         String     // material | mao_de_obra | equipamento | outro
+  amount           Decimal
+  date             DateTime
+
+  createdAt        DateTime    @default(now())
 }
