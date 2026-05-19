@@ -1,8 +1,8 @@
 import { prisma } from "../database/prisma";
-import  { Prisma } from "@prisma/client";
+
 
 type CreateObraDTO = {
-  code: string;
+  code?: string;
   name: string;
   status: string;
   state: string;
@@ -14,22 +14,71 @@ type CreateObraDTO = {
   budget: number;
   totalSpent: number;
   userId: string;
+  clientId: string;
 };
 
 class ObrasService {
-  async createObra(data: CreateObraDTO) {
-    return await prisma.obra.create({
-      data,
-    });
+
+  private async generateObraCode(): Promise<string> {
+    const count = await prisma.obra.count();
+    const sequence = String(count + 1).padStart(6, '0');
+    return `OBR-${sequence}`;
   }
+
+  async createObra(data: CreateObraDTO) {
+    const code = await this.generateObraCode();
+
+    return await prisma.obra.create({
+
+      data: {
+
+        code,
+        name: data.name,
+        status: data.status,
+
+        state: data.state,
+        city: data.city,
+        address: data.address,
+
+        startDate: data.startDate,
+        expectedEndDate: data.expectedEndDate,
+        actualEndDate: data.actualEndDate,
+
+        budget: data.budget,
+        totalSpent: data.totalSpent || 0,
+
+        user: {
+          connect: {
+            id: data.userId
+          }
+        },
+        client: {
+          connect: { id: data.clientId }
+        }
+
+      }
+
+    });
+
+  }
+
 }
 
 class GetObraByUserId {
+
   async getObrasByUserId(userId: string) {
+
     return await prisma.obra.findMany({
-      where: {userId},
+      where: {
+        userId
+      },
     });
+
   }
+
 }
 
-export { ObrasService, GetObraByUserId };
+export {
+  ObrasService,
+  GetObraByUserId
+};

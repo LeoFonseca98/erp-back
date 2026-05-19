@@ -21,6 +21,7 @@ class ObrasController {
         actualEndDate,
         budget,
         totalSpent,
+        clientId
       } = req.body;
 
       const userId = req.user?.id;
@@ -42,6 +43,7 @@ class ObrasController {
         budget: Number(budget),
         totalSpent: Number(totalSpent),
         userId,
+        clientId
       });
 
       return res.status(201).json(obra);

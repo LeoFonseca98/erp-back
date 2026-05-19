@@ -19,6 +19,36 @@ class UserController {
             return res.status(400).json({ message: error.message });
         }
     }
+
+    async updateRole(req: Request, res: Response) {
+
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (typeof id !== "string"){
+            return res.status(400).json({
+                message:"ID inválido"
+            });
+        }
+
+        if (
+            role !== "ADMIN" &&
+            role !== "RESPONSAVEL"
+        ) {
+            return res.status(400).json({
+                message: "Role inválida"
+            });
+        }
+
+        const userService = new UserService();
+
+        const user = await userService.updateRole(
+            id,
+            role
+        );
+
+        return res.json(user);
+    }
 }
 
 export { UserController }

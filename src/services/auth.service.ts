@@ -13,18 +13,28 @@ class AuthService {
             throw new Error("Usuário ja existe!");
         }
 
+        const usersCount = await prisma.user.count();
+
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        const role = 
+            usersCount === 0
+                ? "ADMIN"
+                : "RESPONSAVEL";
+
 
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
-                password: hashedPassword
+                password: hashedPassword,
+                role
             },
             select: {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 created_at: true
             }
         });
@@ -32,42 +42,52 @@ class AuthService {
         return {
             user: {
                 id: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
             },
         };
     }
 
 
     async login(email: string, password: string) {
+
         const user = await prisma.user.findUnique({
-        where: { email }
+            where: { email }
         });
 
         if (!user) {
-        throw new Error("Usuário não encontrado");
+            throw new Error("Usuário não encontrado");
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
 
         if (!passwordMatch) {
-        throw new Error("Senha inválida");
+            throw new Error("Senha inválida");
         }
 
-        
         const token = jwt.sign(
-        { id: user.id }, 
-        process.env.JWT_SECRET as string,
-        { expiresIn: "1d" }
+            {
+                id: user.id,
+                role: user.role
+            },
+            process.env.JWT_SECRET as string,
+            {
+                expiresIn: "1d"
+            }
         );
 
         return {
-        user: {
-            id: user.id,
-            email: user.email
-        },
-        token
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            },
+            token
         };
-
     }
 }
 
