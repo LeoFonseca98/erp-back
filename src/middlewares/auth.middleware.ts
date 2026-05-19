@@ -1,27 +1,47 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-function authToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers["authorization"];
+interface TokenPayload {
+    id: string;
+    role: string;
+}
 
-  if (!authHeader) {
-    return res.status(401).json({ message: "Token não enviado" });
-  }
+function authToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
 
-  const token = authHeader.split(" ")[1];
+    const authHeader = req.headers["authorization"];
 
-  try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    );
+    if (!authHeader) {
+        return res.status(401).json({
+            message: "Token não enviado"
+        });
+    }
 
-    (req as any).user = decoded;
+    const token = authHeader.split(" ")[1];
 
-    next();
-  } catch {
-    return res.status(401).json({ message: "Token inválido" });
-  }
+    try {
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string
+        ) as TokenPayload;
+
+        (req as any).user = {
+            id: decoded.id,
+            role: decoded.role
+        };
+
+        next();
+
+    } catch {
+
+        return res.status(401).json({
+            message: "Token inválido"
+        });
+    }
 }
 
 export { authToken };

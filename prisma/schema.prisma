@@ -8,15 +8,28 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(uuid())
-  name             String?
-  email            String    @unique
-  password         String
-  created_at       DateTime  @default(now())
+  id         String   @id @default(uuid())
+  name       String?
+  email      String   @unique
+  password   String
+  role       String   @default("RESPONSAVEL")
+  created_at DateTime @default(now())
 
-  obras            Obra[]
+  obras      Obra[]
 }
 
+model Client {
+  id              String       @id  @default(uuid())
+
+  name            String
+  email           String?
+  phone           String?
+  cpf             String?
+
+  createdAt       DateTime     @default(now())
+
+  obras           Obra[]
+}
 
 model Obra {
   id                String   @id @default(uuid())
@@ -37,6 +50,12 @@ model Obra {
 //Financeiro
   budget            Decimal
   totalSpent        Decimal   @default(0)
+  
+  budgetItems       BudgetItem[]
+
+//Cliente
+  clientId         String
+  client           Client    @relation(fields: [clientId], references: [id])
 
 // Timestamps
   createdAt         DateTime  @default(now())
@@ -45,20 +64,47 @@ model Obra {
   userId            String
   user              User      @relation(fields: [userId], references: [id])  
 
-  despesas          Despesa[]
+  expenses          Expense[]
 }
 
 
-model Despesa {
-  id               String     @id @default(uuid())
+model Expense {
+
+  id               String   @id @default(uuid())
+
   obraId           String
-  obra             Obra       @relation(fields: [obraId], references: [id])
 
-  description      String     //"Compra de cimento", "Pagamento pedreiro"
-  value            Float 
-  category         String     // material | mao_de_obra | equipamento | outro
-  amount           Decimal
+  obra             Obra @relation(fields: [obraId], references: [id])
+
+  budgetItemId     String?
+
+  budgetItem       BudgetItem? @relation(fields: [budgetItemId], references: [id])
+
+  description      String
+  category         String
+  quantity         Float?
+  unitPrice        Decimal?
+  totalPaid        Decimal
+  supplier         String?
+
   date             DateTime
+  createdAt        DateTime @default(now())
+}
 
-  createdAt        DateTime    @default(now())
+
+model BudgetItem {
+  id              String @id @default(uuid())
+
+  obraId          String
+  obra            Obra @relation(fields: [obraId], references: [id])
+
+  description     String
+  unit            String
+
+  quantity        Float
+  unitPrice       Decimal
+
+  expenses        Expense[]
+
+  createdAt       DateTime @default(now())
 }
